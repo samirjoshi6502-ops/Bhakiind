@@ -181,7 +181,7 @@ function mergeContent(value: Partial<SiteContent>): SiteContent {
 export async function readSiteContent(): Promise<SiteContent> {
   try {
     if (hasBlobStorage()) {
-      const blob = await get(contentBlobPath, { access: "private", useCache: false });
+      const blob = await get(contentBlobPath, { access: "public", useCache: false });
       if (!blob || blob.statusCode !== 200) return defaultSiteContent;
       return mergeContent(JSON.parse(await new Response(blob.stream).text()) as Partial<SiteContent>);
     }
@@ -196,7 +196,7 @@ export async function writeSiteContent(value: SiteContent): Promise<SiteContent>
   const nextContent = mergeContent(value);
   if (hasBlobStorage()) {
     await put(contentBlobPath, JSON.stringify(nextContent, null, 2), {
-      access: "private",
+      access: "public",
       addRandomSuffix: false,
       contentType: "application/json",
     });
