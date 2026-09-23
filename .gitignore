@@ -1,0 +1,7 @@
+old_code/
+
+bhakti-new-site/node_modules/
+bhakti-new-site/.next/
+
+*.log
+.env*
