@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-const allowedIps = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
+const allowedIps = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1", "47.11.108.216"]);
 
 export function getRequestIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
