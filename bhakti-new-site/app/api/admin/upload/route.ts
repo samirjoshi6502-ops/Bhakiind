@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { put } from "@vercel/blob";
 import { NextResponse, type NextRequest } from "next/server";
 import { isAdminRequestAllowed } from "@/app/lib/admin-access";
 import { readSiteContent } from "@/app/lib/content-store";
@@ -38,6 +39,15 @@ export async function POST(request: NextRequest) {
   }
 
   const fileName = `${Date.now()}-${randomUUID()}${extension}`;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/${fileName}`, file, { access: "public", addRandomSuffix: false, contentType: file.type });
+    return NextResponse.json({ url: blob.url, name: file.name, type: file.type });
+  }
+
+  if (process.env.VERCEL) {
+    return NextResponse.json({ error: "Hosted media storage is not configured. Add BLOB_READ_WRITE_TOKEN to this deployment." }, { status: 503 });
+  }
+
   const uploadDirectory = path.join(process.cwd(), "public", "uploads");
   await fs.mkdir(uploadDirectory, { recursive: true });
   await fs.writeFile(path.join(uploadDirectory, fileName), Buffer.from(await file.arrayBuffer()));

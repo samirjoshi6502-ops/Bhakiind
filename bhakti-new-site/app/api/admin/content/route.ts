@@ -23,7 +23,8 @@ export async function PUT(request: NextRequest) {
     const content = (await request.json()) as SiteContent;
     const saved = await writeSiteContent(content);
     return NextResponse.json({ ...saved, products: await getAdminProductCatalog() });
-  } catch {
-    return NextResponse.json({ error: "Invalid content payload" }, { status: 400 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to save content.";
+    return NextResponse.json({ error: process.env.VERCEL ? `Hosted content storage failed: ${message}` : "Invalid content payload" }, { status: process.env.VERCEL ? 503 : 400 });
   }
 }

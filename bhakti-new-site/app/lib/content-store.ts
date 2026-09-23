@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { get, put } from "@vercel/blob";
 import { productCatalog, type ProductCatalogItem } from "@/app/products/data";
 
 export type Review = {
@@ -61,6 +62,11 @@ export type SiteContent = {
 };
 
 const contentPath = path.join(process.cwd(), "data", "site-content.json");
+const contentBlobPath = "site-content.json";
+
+function hasBlobStorage() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
 
 export const defaultSiteContent: SiteContent = {
   hero: {
@@ -174,6 +180,11 @@ function mergeContent(value: Partial<SiteContent>): SiteContent {
 
 export async function readSiteContent(): Promise<SiteContent> {
   try {
+    if (hasBlobStorage()) {
+      const blob = await get(contentBlobPath, { access: "private", useCache: false });
+      if (!blob || blob.statusCode !== 200) return defaultSiteContent;
+      return mergeContent(JSON.parse(await new Response(blob.stream).text()) as Partial<SiteContent>);
+    }
     const file = await fs.readFile(contentPath, "utf8");
     return mergeContent(JSON.parse(file) as Partial<SiteContent>);
   } catch {
@@ -183,6 +194,14 @@ export async function readSiteContent(): Promise<SiteContent> {
 
 export async function writeSiteContent(value: SiteContent): Promise<SiteContent> {
   const nextContent = mergeContent(value);
+  if (hasBlobStorage()) {
+    await put(contentBlobPath, JSON.stringify(nextContent, null, 2), {
+      access: "private",
+      addRandomSuffix: false,
+      contentType: "application/json",
+    });
+    return nextContent;
+  }
   await fs.mkdir(path.dirname(contentPath), { recursive: true });
   await fs.writeFile(contentPath, `${JSON.stringify(nextContent, null, 2)}\n`, "utf8");
   return nextContent;
