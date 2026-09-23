@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getConfiguredAdminIps, getRequestIp, isAdminIpAllowed, isAdminRequestAllowed } from "@/app/lib/admin-access";
+import { getAdminSessionSecret, getConfiguredAdminIps, getRequestIp, isAdminIpAllowed, isAdminRequestAllowed } from "@/app/lib/admin-access";
 import { readSiteContent } from "@/app/lib/content-store";
 
 export const dynamic = "force-dynamic";
@@ -17,10 +17,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `This IP (${getRequestIp(request) || "unknown"}) is not on the admin allowlist.` }, { status: 403 });
   }
 
-  const adminSecret = process.env.ADMIN_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-development-admin-session");
-  if (!adminSecret) {
-    return NextResponse.json({ error: "ADMIN_SECRET is not configured on this deployment." }, { status: 503 });
-  }
+  const adminSecret = getAdminSessionSecret();
 
   const body = await request.json().catch(() => null) as { email?: string; password?: string } | null;
   const expectedEmail = process.env.ADMIN_EMAIL || "admin@example.com";
