@@ -1,7 +1,9 @@
 import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
-import { CTAButton, SectionEyebrow, SiteShell, paletteOptions } from "@/app/components/site-shell";
+import { SectionEyebrow, SiteShell } from "@/app/components/site-shell";
+import { readSiteContent } from "@/app/lib/content-store";
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const page = (await readSiteContent()).pageContent.contact;
   const theme = {
     name: "Azure Build",
     accent: "#4AA9D8",
@@ -18,19 +20,19 @@ export default function ContactPage() {
       <section className="mx-auto max-w-7xl px-5 py-16 lg:px-10 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <SectionEyebrow theme={theme}>Contact</SectionEyebrow>
+            <SectionEyebrow theme={theme}>{page.eyebrow}</SectionEyebrow>
             <h1 className="mt-4 text-4xl font-black tracking-[-0.06em] md:text-6xl" style={{ color: theme.panel }}>
-              Let’s build the right production setup for your business.
+              {page.title}
             </h1>
             <p className="mt-6 text-lg leading-8" style={{ color: theme.text }}>
-              Whether you need equipment guidance, a custom recommendation, or a direct quotation, our team can help you plan the right machine for your manufacturing goals.
+              {page.description}
             </p>
 
             <div className="mt-8 space-y-5">
               {[
-                { icon: Mail, label: "Email", value: "sales@bhaktienterprise.in" },
-                { icon: Phone, label: "Phone", value: "+91 96648 38705" },
-                { icon: MapPin, label: "Location", value: "Yogi Nagar, Gondal, Gujarat 360311, India" },
+                { icon: Mail, label: "Email", value: page.email },
+                { icon: Phone, label: "Phone", value: page.phone },
+                { icon: MapPin, label: "Location", value: page.location },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center gap-4 rounded-[22px] border p-4" style={{ borderColor: `${theme.accent}22`, background: theme.baseSoft }}>
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: `${theme.accent}15`, color: theme.accent }}>

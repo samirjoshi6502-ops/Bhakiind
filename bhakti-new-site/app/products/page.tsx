@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Factory, Landmark, Wrench, Sparkles } from "lucide-react";
+import { ChevronRight, Factory, Landmark, Wrench, Sparkles } from "lucide-react";
 import { CTAButton, SectionEyebrow, SiteShell } from "@/app/components/site-shell";
-import { productCatalog } from "@/app/products/data";
+import { getPublishedProductCatalog } from "@/app/lib/content-store";
+import { readSiteContent } from "@/app/lib/content-store";
 
 const iconMap = {
   sparkles: Sparkles,
@@ -9,7 +10,11 @@ const iconMap = {
   wrench: Wrench,
 };
 
-export default function ProductsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ProductsPage() {
+  const productCatalog = await getPublishedProductCatalog();
+  const page = (await readSiteContent()).pageContent.products;
   const theme = {
     name: "Azure Build",
     accent: "#4AA9D8",
@@ -25,12 +30,12 @@ export default function ProductsPage() {
     <SiteShell activeThemeName={theme.name}>
       <section className="mx-auto max-w-7xl px-5 py-16 lg:px-10 lg:py-20">
         <div className="max-w-3xl">
-          <SectionEyebrow theme={theme}>Our products</SectionEyebrow>
+          <SectionEyebrow theme={theme}>{page.eyebrow}</SectionEyebrow>
           <h1 className="mt-4 text-4xl font-black tracking-[-0.06em] md:text-6xl" style={{ color: theme.panel }}>
-            Commercial equipment engineered for dependable dairy and frozen dessert production.
+            {page.title}
           </h1>
           <p className="mt-6 text-lg leading-8" style={{ color: theme.text }}>
-            From kulfi manufacturing lines to high-output ice cream systems, each solution is shaped around practical factory performance and long-term reliability.
+            {page.description}
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <CTAButton href="/contact" theme={theme}>Request a quote</CTAButton>

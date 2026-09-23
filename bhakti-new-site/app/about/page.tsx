@@ -1,8 +1,9 @@
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, Factory, ShieldCheck, Users } from "lucide-react";
-import { CTAButton, SectionEyebrow, SiteShell, paletteOptions } from "@/app/components/site-shell";
+import { CheckCircle2, Factory, ShieldCheck, Users } from "lucide-react";
+import { CTAButton, SectionEyebrow, SiteShell } from "@/app/components/site-shell";
+import { readSiteContent } from "@/app/lib/content-store";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const page = (await readSiteContent()).pageContent.about;
   const theme = {
     name: "Azure Build",
     accent: "#4AA9D8",
@@ -19,12 +20,12 @@ export default function AboutPage() {
       <section className="mx-auto max-w-7xl px-5 py-16 lg:px-10 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           <div>
-            <SectionEyebrow theme={theme}>About Bhakti</SectionEyebrow>
+            <SectionEyebrow theme={theme}>{page.eyebrow}</SectionEyebrow>
             <h1 className="mt-5 text-4xl font-black tracking-[-0.06em] md:text-6xl" style={{ color: theme.panel }}>
-              A manufacturing partner built around trust, scale, and dependable performance.
+              {page.title}
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8" style={{ color: theme.text }}>
-              Bhakti Enterprise has grown by building industrial equipment that helps food producers operate consistently, efficiently, and with confidence.
+              {page.description}
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <CTAButton href="/products" theme={theme}>Our products</CTAButton>
@@ -33,18 +34,16 @@ export default function AboutPage() {
           </div>
 
           <div className="overflow-hidden rounded-[30px] border" style={{ borderColor: `${theme.accent}24`, background: theme.baseSoft }}>
-            <img src="/images/hero-bg.jpg" alt="Industrial production space" className="h-full w-full object-cover" />
+            <img src={page.image} alt="Industrial production space" className="h-full w-full object-cover" />
           </div>
         </div>
       </section>
 
       <section className="border-y" style={{ borderColor: `${theme.accent}20`, background: theme.baseSoft }}>
         <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-3 lg:px-10">
-          {[
-            { icon: Factory, title: "Industrial focus", text: "Every system is designed to meet the practical realities of manufacturing environments." },
-            { icon: ShieldCheck, title: "Quality-led", text: "We prioritize durability, safety, and repeatable production performance." },
-            { icon: Users, title: "Client-centered", text: "We support businesses from machine selection through after-sales guidance." },
-          ].map(({ icon: Icon, title, text }) => (
+          {page.pillars.map(({ title, text }, index) => {
+            const Icon = [Factory, ShieldCheck, Users][index % 3];
+            return (
             <div key={title} className="rounded-[28px] border p-6" style={{ borderColor: `${theme.accent}22`, background: theme.base }}>
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: `${theme.accent}15`, color: theme.accent }}>
                 <Icon className="h-6 w-6" />
@@ -52,7 +51,8 @@ export default function AboutPage() {
               <h2 className="text-2xl font-bold" style={{ color: theme.panel }}>{title}</h2>
               <p className="mt-3 text-base leading-7" style={{ color: theme.text }}>{text}</p>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -60,17 +60,12 @@ export default function AboutPage() {
         <div className="mb-10 max-w-3xl">
           <SectionEyebrow theme={theme}>Our approach</SectionEyebrow>
           <h2 className="mt-4 text-3xl font-black tracking-[-0.05em] md:text-5xl" style={{ color: theme.panel }}>
-            Built to support consistent output, smooth operations, and long-term business growth.
+            {page.approachTitle}
           </h2>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {[
-            "We understand the requirements of food processing businesses who need machines that are reliable under heavy use.",
-            "Our equipment is designed for operational simplicity, robust build quality, and practical maintenance support.",
-            "Production planning, machine matching, and customer guidance are part of how we work with each buyer.",
-            "The focus remains on dependable output, trust, and sustainable manufacturing relationships."
-          ].map((point) => (
+          {page.approachPoints.map((point) => (
             <div key={point} className="flex gap-4 rounded-[24px] border p-5" style={{ borderColor: `${theme.accent}22`, background: theme.baseSoft }}>
               <div className="mt-0.5 text-cyan-600"><CheckCircle2 className="h-5 w-5" style={{ color: theme.accent }} /></div>
               <p className="text-base leading-7" style={{ color: theme.text }}>{point}</p>

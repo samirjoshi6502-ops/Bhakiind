@@ -7,14 +7,12 @@ import {
   ChevronRight,
   Factory,
   Gauge,
-  Play,
   ShieldCheck,
-  Sparkles,
   Star,
   Trophy,
   Users,
-  Wrench,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CTAButton, HeroBadge, SectionEyebrow, SiteShell, VideoCard } from "@/app/components/site-shell";
 
 const featureProducts = [
@@ -63,6 +61,14 @@ const trustAssets = [
   },
 ];
 
+type EditableHomeContent = {
+  hero: { badge: string; title: string; description: string; image: string };
+  pageContent: { home: { stats: Array<{ label: string; value: string }>; aboutTitle: string; aboutParagraphs: string[]; advantagesTitle: string; videoUrl: string } };
+  sectionVisibility: Record<string, boolean>;
+  customers: Array<{ id: string; name: string; logo: string; visible: boolean }>;
+  reviews: Array<{ id: string; name: string; role: string; comment: string; rating: number; visible: boolean }>;
+};
+
 export default function HomePage() {
   const activeTheme = {
     name: "Azure Build",
@@ -75,18 +81,30 @@ export default function HomePage() {
     swatches: ["#F5FAFF", "#EAF4FF", "#4AA9D8", "#163B59", "#C7E4FA"],
   };
 
+  const [editableContent, setEditableContent] = useState<EditableHomeContent | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/content")
+      .then((response) => response.ok ? response.json() : null)
+      .then((content) => content && setEditableContent(content))
+      .catch(() => undefined);
+  }, []);
+
+  const sectionVisible = (name: string) => editableContent?.sectionVisibility[name] !== false;
+  const visibleReviews = editableContent?.reviews.filter((review) => review.visible) ?? reviews;
+
   return (
     <SiteShell activeThemeName={activeTheme.name}>
       <section className="relative overflow-hidden">
         <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 15% 15%, ${activeTheme.accent}22 0%, transparent 25%), radial-gradient(circle at 80% 20%, ${activeTheme.accent}16 0%, transparent 30%)` }} />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-14 lg:grid-cols-[1.08fr_0.92fr] lg:px-10 lg:py-20">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
-            <HeroBadge theme={activeTheme} />
+            <HeroBadge theme={activeTheme}>{editableContent?.hero.badge}</HeroBadge>
             <h1 className="max-w-xl text-4xl font-black leading-[0.9] tracking-[-0.07em] md:text-6xl" style={{ color: activeTheme.panel }}>
-              Industrial ice cream machinery built for serious production.
+              {editableContent?.hero.title ?? "Industrial ice cream machinery built for serious production."}
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-8" style={{ color: activeTheme.text }}>
-              Bhakti Enterprise designs and manufactures dependable kulfi and ice cream equipment for businesses that need reliable output, quality consistency, and long-term trust.
+              {editableContent?.hero.description ?? "Bhakti Enterprise designs and manufactures dependable kulfi and ice cream equipment for businesses that need reliable output, quality consistency, and long-term trust."}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <CTAButton href="/products" theme={activeTheme}>Explore products</CTAButton>
@@ -94,12 +112,12 @@ export default function HomePage() {
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {[
+              {(editableContent?.pageContent.home.stats ?? [
                 { label: "Machines delivered", value: "5000+" },
                 { label: "Industries served", value: "40+" },
                 { label: "Export footprint", value: "18 countries" },
                 { label: "Customer retention", value: "95%" },
-              ].map((stat) => (
+              ]).map((stat) => (
                 <div key={stat.label} className="rounded-2xl border p-4" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
                   <div className="text-2xl font-black" style={{ color: activeTheme.panel }}>{stat.value}</div>
                   <div className="mt-2 text-[10px] uppercase tracking-[0.18em]" style={{ color: activeTheme.text }}>{stat.label}</div>
@@ -112,7 +130,7 @@ export default function HomePage() {
             <div className="absolute -left-10 top-8 h-20 w-20 rounded-full blur-3xl" style={{ background: `${activeTheme.accent}30` }} />
             <div className="relative overflow-hidden rounded-[32px] border p-3 shadow-[0_25px_65px_rgba(10,25,40,0.12)] md:p-4" style={{ borderColor: `${activeTheme.accent}26`, background: activeTheme.baseSoft }}>
               <div className="overflow-hidden rounded-[26px] border" style={{ borderColor: `${activeTheme.accent}26`, background: activeTheme.base }}>
-                <img src="/images/legacy/home-be.jpeg" alt="Bhakti production environment" className="h-[360px] w-full object-cover md:h-[560px]" />
+                <img src={editableContent?.hero.image ?? "/images/legacy/home-be.jpeg"} alt="Bhakti production environment" className="h-[360px] w-full object-cover md:h-[560px]" />
               </div>
               <div className="absolute bottom-5 left-5 max-w-[250px] rounded-[20px] border p-4 backdrop-blur-sm md:bottom-8 md:left-8 md:max-w-[280px] md:p-5" style={{ borderColor: `${activeTheme.accent}28`, background: `${activeTheme.base}d6` }}>
                 <div className="flex items-center justify-between gap-3">
@@ -130,23 +148,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
+      <section className={`${sectionVisible("about") ? "" : "hidden"} mx-auto max-w-7xl px-5 py-16 lg:px-10`}>
         <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div className="rounded-[30px] border p-8" style={{ borderColor: `${activeTheme.accent}24`, background: activeTheme.baseSoft }}>
             <SectionEyebrow theme={activeTheme}>About Bhakti</SectionEyebrow>
             <h2 className="mt-4 text-3xl font-black tracking-[-0.05em] md:text-5xl" style={{ color: activeTheme.panel }}>
-              A manufacturing partner built around dependable performance.
+              {editableContent?.pageContent.home.aboutTitle ?? "A manufacturing partner built around dependable performance."}
             </h2>
           </div>
 
           <div className="space-y-5 text-lg leading-8" style={{ color: activeTheme.text }}>
-            <p>Bhakti Enterprise has grown by focusing on what matters most for commercial production: consistency, machine durability, and practical support that helps businesses keep moving.</p>
-            <p>We work across kulfi, ice cream, and dairy equipment applications where uptime and quality are essential to daily operations.</p>
+            {(editableContent?.pageContent.home.aboutParagraphs ?? ["Bhakti Enterprise has grown by focusing on what matters most for commercial production: consistency, machine durability, and practical support that helps businesses keep moving.", "We work across kulfi, ice cream, and dairy equipment applications where uptime and quality are essential to daily operations."]).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
           </div>
         </div>
       </section>
 
-      <section className="border-y" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
+      <section className={`${sectionVisible("products") ? "" : "hidden"} border-y`} style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
           <div className="mb-10 max-w-3xl">
             <SectionEyebrow theme={activeTheme}>Core products</SectionEyebrow>
@@ -178,11 +195,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
+      <section className={`${sectionVisible("advantages") ? "" : "hidden"} mx-auto max-w-7xl px-5 py-16 lg:px-10`}>
         <div className="mb-10 max-w-3xl">
           <SectionEyebrow theme={activeTheme}>Why choose us</SectionEyebrow>
           <h2 className="mt-4 text-3xl font-black tracking-[-0.05em] md:text-5xl" style={{ color: activeTheme.panel }}>
-            Built for reliability, quality, and long-term confidence.
+            {editableContent?.pageContent.home.advantagesTitle ?? "Built for reliability, quality, and long-term confidence."}
           </h2>
         </div>
 
@@ -204,7 +221,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
+      <section className={`${sectionVisible("trust") ? "" : "hidden"} border-y`} style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
           <div className="mb-10 max-w-3xl">
             <SectionEyebrow theme={activeTheme}>Trust & proof</SectionEyebrow>
@@ -229,7 +246,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.base }}>
+      <section className={`${sectionVisible("process") ? "" : "hidden"} border-y`} style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.base }}>
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
           <div className="mb-10 max-w-3xl">
             <SectionEyebrow theme={activeTheme}>How we work</SectionEyebrow>
@@ -250,7 +267,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.base }}>
+      <section className={`${sectionVisible("video") ? "" : "hidden"} border-y`} style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.base }}>
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
           <div className="mb-10 text-center">
             <SectionEyebrow theme={activeTheme}>Video showcase</SectionEyebrow>
@@ -259,12 +276,12 @@ export default function HomePage() {
             </h2>
           </div>
           <div className="mx-auto max-w-5xl">
-            <VideoCard theme={activeTheme} />
+            <VideoCard theme={activeTheme} videoUrl={editableContent?.pageContent.home.videoUrl} />
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
+      <section className={`${sectionVisible("clients") ? "" : "hidden"} mx-auto max-w-7xl px-5 py-16 lg:px-10`}>
         <div className="mb-10 text-center">
           <SectionEyebrow theme={activeTheme}>Client trust</SectionEyebrow>
           <h2 className="mt-4 text-3xl font-black tracking-[-0.05em] md:text-5xl" style={{ color: activeTheme.panel }}>
@@ -272,25 +289,22 @@ export default function HomePage() {
           </h2>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
-          {clients.map(({ name, monogram, logo }) => (
-            <div key={name} className="flex min-h-[132px] flex-col items-center justify-center gap-3 rounded-[26px] border p-4 text-center" style={{ borderColor: `${activeTheme.accent}22`, background: activeTheme.baseSoft }}>
-              {logo ? (
-                <div className="flex h-16 w-20 items-center justify-center overflow-hidden rounded-2xl border bg-white p-2" style={{ borderColor: `${activeTheme.accent}24` }}>
-                  <img src={logo} alt={name} className="h-full w-full object-contain" />
+        <div className="customer-marquee" aria-label="Our customers">
+          <div className="customer-marquee-track">
+            {[...(editableContent?.customers?.filter((customer) => customer.visible) ?? clients), ...(editableContent?.customers?.filter((customer) => customer.visible) ?? clients)].map((customer, index) => {
+              const monogram = customer.name.split(" ").map((word) => word[0]).join("").slice(0, 3);
+              return <div key={`${customer.name}-${index}`} className="customer-marquee-card" style={{ borderColor: `${activeTheme.accent}22`, background: activeTheme.baseSoft }}>
+                <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded-2xl border bg-white p-2" style={{ borderColor: `${activeTheme.accent}24` }}>
+                  {customer.logo ? <img src={customer.logo} alt={customer.name} className="h-full w-full object-contain" /> : <span className="text-lg font-black" style={{ color: activeTheme.panel }}>{monogram}</span>}
                 </div>
-              ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-black" style={{ background: `${activeTheme.accent}18`, color: activeTheme.panel }}>
-                  {monogram}
-                </div>
-              )}
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: activeTheme.panel }}>{name}</div>
-            </div>
-          ))}
+                <div className="text-center text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: activeTheme.panel }}>{customer.name}</div>
+              </div>;
+            })}
+          </div>
         </div>
       </section>
 
-      <section className="border-y" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
+      <section className={`${sectionVisible("reviews") ? "" : "hidden"} border-y`} style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
         <div className="mx-auto max-w-7xl px-5 py-16 lg:px-10">
           <div className="mb-10 max-w-3xl">
             <SectionEyebrow theme={activeTheme}>Customer reviews</SectionEyebrow>
@@ -300,7 +314,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            {reviews.map(({ name, role, comment, rating }) => (
+            {visibleReviews.map(({ name, role, comment, rating }) => (
               <div key={name} className="group rounded-[28px] border p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(22,59,89,0.12)]" style={{ borderColor: `${activeTheme.accent}22`, background: activeTheme.base }}>
                 <div className="mb-4 flex items-center gap-1">
                   {Array.from({ length: rating }).map((_, index) => (
@@ -318,7 +332,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-t" style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
+      <section className={`${sectionVisible("contact") ? "" : "hidden"} border-t`} style={{ borderColor: `${activeTheme.accent}20`, background: activeTheme.baseSoft }}>
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[1fr_0.8fr] lg:px-10">
           <div>
             <SectionEyebrow theme={activeTheme}>Contact</SectionEyebrow>

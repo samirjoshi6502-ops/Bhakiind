@@ -12,7 +12,6 @@ import {
   MapPin,
   Menu,
   Phone,
-  Ruler,
   ShieldCheck,
   Sparkles,
   Star,
@@ -21,7 +20,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 function FacebookIcon() {
   return (
@@ -210,6 +209,14 @@ export function SiteShell({ children, activeThemeName = "Azure Build" }: { child
     };
 
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [siteMedia, setSiteMedia] = useState({ logo: "/images/bhakti-logo.jpg", brochure: "/files/Bhakti-Brochure.pdf" });
+
+  useEffect(() => {
+    fetch("/api/admin/content")
+      .then((response) => response.ok ? response.json() : null)
+      .then((content) => content?.media && setSiteMedia(content.media))
+      .catch(() => undefined);
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ background: activeTheme.base, color: activeTheme.text }}>
@@ -226,7 +233,7 @@ export function SiteShell({ children, activeThemeName = "Azure Build" }: { child
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <a href="/files/Bhakti-Brochure.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold" style={{ borderColor: `${activeTheme.accent}40`, background: activeTheme.baseSoft, color: activeTheme.panel }}>
+            <a href={siteMedia.brochure} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold" style={{ borderColor: `${activeTheme.accent}40`, background: activeTheme.baseSoft, color: activeTheme.panel }}>
               <Download className="h-4 w-4" />
               Brochure
             </a>
@@ -249,7 +256,7 @@ export function SiteShell({ children, activeThemeName = "Azure Build" }: { child
                   {item.label}
                 </Link>
               ))}
-              <a href="/files/Bhakti-Brochure.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold" style={{ borderColor: `${activeTheme.accent}40`, background: activeTheme.baseSoft, color: activeTheme.panel }}>
+              <a href={siteMedia.brochure} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold" style={{ borderColor: `${activeTheme.accent}40`, background: activeTheme.baseSoft, color: activeTheme.panel }}>
                 <Download className="h-4 w-4" />
                 Brochure
               </a>
@@ -269,7 +276,7 @@ export function SiteShell({ children, activeThemeName = "Azure Build" }: { child
           <div>
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white/5">
-                <img src="/images/bhakti-logo.jpg" alt="Bhakti Enterprise" className="h-full w-full object-contain p-1" loading="lazy" decoding="async" />
+                <img src={siteMedia.logo} alt="Bhakti Enterprise" className="h-full w-full object-contain p-1" loading="lazy" decoding="async" />
               </div>
               <div>
                 <div className="text-xs font-black uppercase tracking-[0.32em]">Bhakti</div>
@@ -303,7 +310,7 @@ export function SiteShell({ children, activeThemeName = "Azure Build" }: { child
               <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 text-cyan-300" /><span>Yogi Nagar, Gondal, Gujarat 360311, India</span></div>
               <a href="tel:+919664838705" className="flex items-center gap-2 transition hover:text-white"><Phone className="h-4 w-4 text-cyan-300" /> +91 96648 38705</a>
               <a href="mailto:sales@bhaktienterprise.in" className="flex items-center gap-2 transition hover:text-white"><BadgeCheck className="h-4 w-4 text-cyan-300" /> sales@bhaktienterprise.in</a>
-              <a href="/files/Bhakti-Brochure.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-semibold text-cyan-300 transition hover:text-white"><Download className="h-4 w-4" /> Brochure PDF</a>
+              <a href={siteMedia.brochure} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-semibold text-cyan-300 transition hover:text-white"><Download className="h-4 w-4" /> Brochure PDF</a>
             </div>
           </div>
 
@@ -396,11 +403,11 @@ export function VideoCard({ theme, videoUrl = "https://www.youtube.com/embed/4H3
   );
 }
 
-export function HeroBadge({ theme }: { theme: (typeof paletteOptions)[number] }) {
+export function HeroBadge({ theme, children = "Industrial ice cream machinery" }: { theme: (typeof paletteOptions)[number]; children?: ReactNode }) {
   return (
     <div className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ borderColor: `${theme.accent}44`, background: theme.baseSoft, color: theme.panel }}>
       <Star className="h-3.5 w-3.5 fill-current" style={{ color: theme.accent }} />
-      Industrial ice cream machinery
+      {children}
     </div>
   );
 }

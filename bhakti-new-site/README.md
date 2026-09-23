@@ -34,3 +34,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Hosted admin access
+
+Set `ADMIN_SECRET` and `ADMIN_ALLOWED_IPS` environment variables in the hosted deployment. `ADMIN_ALLOWED_IPS` accepts comma-separated public IPs. Open `/admin` from an approved IP and sign in with `admin@example.com` / `admin123` for now. After signing in, an administrator can add more IPs from the Security panel. Override the temporary credentials with `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Uploaded files and JSON content still use local filesystem storage, which needs persistent storage such as Vercel Blob or S3 for production persistence.

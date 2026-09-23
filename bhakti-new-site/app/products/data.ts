@@ -6,6 +6,7 @@ export type ProductCatalogItem = {
   image: string;
   gallery: string[];
   videoUrl?: string;
+  videos?: string[];
   icon: "sparkles" | "factory" | "wrench";
   overview: string;
   highlights: string[];

@@ -2,7 +2,9 @@ import Link from "next/link";
 import { ArrowRight, ChevronRight, Factory, Ruler, Sparkles, Wrench } from "lucide-react";
 import { notFound } from "next/navigation";
 import { CTAButton, SectionEyebrow, SiteShell } from "@/app/components/site-shell";
-import { productCatalog } from "@/app/products/data";
+import { getPublishedProductCatalog } from "@/app/lib/content-store";
+
+export const dynamic = "force-dynamic";
 
 const iconMap = {
   sparkles: Sparkles,
@@ -11,11 +13,12 @@ const iconMap = {
 };
 
 export async function generateStaticParams() {
-  return productCatalog.map((product) => ({ slug: product.slug }));
+  return (await getPublishedProductCatalog()).map((product) => ({ slug: product.slug }));
 }
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const productCatalog = await getPublishedProductCatalog();
   const product = productCatalog.find((item) => item.slug === slug);
 
   if (!product) {
@@ -107,18 +110,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ))}
             </div>
 
-            {product.videoUrl ? (
-              <div className="overflow-hidden rounded-[28px] border" style={{ borderColor: `${theme.accent}20`, background: theme.base }}>
-                <div className="relative aspect-video w-full overflow-hidden">
-                  <iframe
-                    src={product.videoUrl}
-                    title={`${product.title} product video`}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                </div>
+            {product.videos?.length ? (
+              <div className="grid gap-4">
+                {product.videos.map((video, index) => (
+                  <div key={`${video}-${index}`} className="overflow-hidden rounded-[28px] border" style={{ borderColor: `${theme.accent}20`, background: theme.base }}>
+                    <div className="relative aspect-video w-full overflow-hidden">
+                      {video.match(/\.(mp4|webm)(\?.*)?$/i) ? <video src={video} controls className="h-full w-full" /> : <iframe src={video} title={`${product.title} product video ${index + 1}`} className="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : null}
           </div>
